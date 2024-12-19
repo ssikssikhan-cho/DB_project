@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>예약 페이지</title>
+</head>
+<body>
+  <h1>강의실 예약</h1>
+  <div id="classrooms"></div>
+
+  <script>
+    // 로그인 상태 체크
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      window.location.href = '/login.html'; // 로그인 페이지로 리디렉션
+    } else {
+      // 로그인 성공 시 예약 페이지를 로드합니다.
+      loadClassrooms();
+    }
+
+    async function loadClassrooms() {
+      const response = await fetch('/api/reservations', {
+        headers: { 'Authorization': token }, // Authorization 헤더에 token 추가
+      });
+
+      if (response.ok) {
+        const classrooms = await response.json();
+        const container = document.getElementById('classrooms');
+        classrooms.forEach(room => {
+          const btn = document.createElement('button');
+          btn.textContent = room.classroom_id;
+          btn.addEventListener('click', () => alert(`${room.classroom_id} 예약 페이지`));
+          container.appendChild(btn);
+        });
+      } else {
+        alert('강의실 정보를 불러오는 데 실패했습니다.');
+      }
+    }
+  </script>
+</body>
+</html>

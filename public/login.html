@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+</head>
+<body>
+  <h1>로그인</h1>
+  <form id="loginForm">
+    <input type="text" id="studentId" placeholder="학번" required />
+    <input type="password" id="password" placeholder="비밀번호" required />
+    <button type="submit">로그인</button>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const studentId = document.getElementById('studentId').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        alert('로그인 성공');
+        window.location.href = '/reservation.html';
+      } else {
+        alert('잘못된 로그인입니다.');
+      }
+    });
+  </script>
+</body>
+</html>

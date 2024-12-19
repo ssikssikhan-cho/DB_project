@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>예약 페이지</title>
+</head>
+<body>
+  <h1>강의실 예약</h1>
+  <div id="classrooms"></div>
+  <div id="timeSlots" style="display: none;">
+    <h2>예약 가능한 시간</h2>
+    <div id="availableTimes"></div>
+    <button id="confirmReservation" style="display: none;">예약하기</button>
+  </div>
+
+  <script>
+    // 로그인 상태 체크
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      window.location.href = '/login.html'; // 로그인 페이지로 리디렉션
+    } else {
+      // 로그인 성공 시 예약 페이지를 로드합니다.
+      loadClassrooms();
+    }
+
+    // 강의실 목록을 로드하는 함수
+    async function loadClassrooms() {
+      const response = await fetch('/api/classrooms', {
+        headers: { 'Authorization': token },
+      });
+
+      if (response.ok) {
+        const classrooms = await response.json();
+        const container = document.getElementById('classrooms');
+        classrooms.forEach(room => {
+          const btn = document.createElement('button');
+          btn.textContent = room.classroom_id;
+          btn.addEventListener('click', () => loadTimeSlots(room.classroom_id));
+          container.appendChild(btn);
+        });
+      } else {
+        alert('강의실 정보를 불러오는 데 실패했습니다.');
+      }
+    }
+
+    // 예약 가능한 시간 목록을 로드하는 함수
+    async function loadTimeSlots(classroomId) {
+      const response = await fetch(`/api/reservations/available/${classroomId}`, {
+        headers: { 'Authorization': token },
+      });
+
+      if (response.ok) {
+        const availableTimes = await response.json();
+        const container = document.getElementById('availableTimes');
+        const confirmButton = document.getElementById('confirmReservation');
+        container.innerHTML = ''; // 이전의 시간 슬롯 초기화
+        confirmButton.style.display = 'block';
+        confirmButton.onclick = () => confirmReservation(classroomId, availableTimes);
+        
+        availableTimes.forEach(time => {
+          const btn = document.createElement('button');
+          btn.textContent = time;
+          btn.addEventListener('click', () => toggleTimeSlot(btn));
+          container.appendChild(btn);
+        });
+
+        document.getElementById('timeSlots').style.display = 'block'; // 시간 슬롯 표시
+      } else {
+        alert('예약 가능한 시간 정보를 불러오는 데 실패했습니다.');
+      }
+    }
+
+    // 선택된 시간 슬롯을 토글하는 함수
+    function toggleTimeSlot(button) {
+      const isSelected = button.style.textDecoration === 'line-through';
+      if (isSelected) {
+        button.style.textDecoration = '';
+        button.disabled = false;
+      } else {
+        button.style.textDecoration = 'line-through';
+        button.disabled = true;
+      }
+    }
+
+    // 예약을 완료하는 함수
+    async function confirmReservation(classroomId, availableTimes) {
+      const selectedTimes = Array.from(document.querySelectorAll('#availableTimes button[style="text-decoration: line-through;"]'))
+        .map(btn => btn.textContent);
+      
+      if (selectedTimes.length === 0) {
+        alert('예약할 시간을 선택해주세요.');
+        return;
+      }
+
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+        body: JSON.stringify({
+          classroomId,
+          reservationTimes: selectedTimes,
+        }),
+      });
+
+      if (response.ok) {
+        alert('예약이 완료되었습니다.');
+        window.location.href = '/reservation.html'; // 예약 페이지로 리디렉션
+      } else {
+        alert('예약에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
+  </script>
+</body>
+</html>
