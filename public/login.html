@@ -86,24 +86,33 @@
     </div>
     <h1>홍익대학교</h1>
     <p>홍익대학교 T동 강의실 대여를 이용하시려면 로그인하세요</p>
-    <form id="loginForm">
-      <input type="text" id="studentId" placeholder="학번" required />
-      <input type="password" id="password" placeholder="비밀번호" required />
-      <button type="submit">로그인</button>
-    </form>
-    <div class="options">
-      <a href="#">아이디 찾기</a>
-      <a href="#">비밀번호 찾기</a>
-    </div>
+    <input type="text" id="name" placeholder="아이디(학번)">
+    <input type="password" id="password" placeholder="비밀번호">
+    <button onclick="login()">로그인</button>
+    <p id="error" style="color: red;"></p>
   </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      // 로그인 성공 처리 (아이디/비밀번호 상관없이 성공)
-      localStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
-      window.location.href = 'reservation.html'; // 강의실 대여 화면으로 이동
-    });
+    async function login() {
+      const name = document.getElementById('name').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, password })
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', result.token);
+        window.location.href = '/reservation.html';
+      } else {
+        document.getElementById('error').textContent = result.error;
+      }
+    }
   </script>
 </body>
 </html>

@@ -30,3 +30,24 @@ CREATE TABLE reservation (
   FOREIGN KEY (user_id) REFERENCES user(user_id),
   FOREIGN KEY (classroom_id) REFERENCES classroom(classroom_id)
 );
+
+-- 초기 데이터 삽입
+INSERT INTO user (name, password, major, role) VALUES
+('C035406', 'test1234', 'CS', 'student'),
+('admin', 'adminpass', 'CS', 'admin'),
+('student1', 'studentpass1', 'CS', 'student'),
+('student2', 'studentpass2', 'EE', 'student');
+
+INSERT INTO classroom (capacity, location, facilities) VALUES
+(100, 'T101', 'Projector, Whiteboard'),
+(100, 'T102', 'Projector, Whiteboard'),
+(100, 'T103', 'Projector, Whiteboard'),
+(100, 'T501', 'Projector, Whiteboard'),
+(100, 'T502', 'Projector, Whiteboard'),
+(100, 'T503', 'Projector, Whiteboard'),
+(60, 'T601', 'Projector, Whiteboard'),
+(60, 'T602', 'Projector, Whiteboard'),
+(60, 'T603', 'Projector, Whiteboard'),
+(60, 'T701', 'Projector, Whiteboard'),
+(60, 'T702', 'Projector, Whiteboard'),
+(60, 'T703', 'Projector, Whiteboard');

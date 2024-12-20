@@ -34,24 +34,76 @@
   <script>
     // 로그아웃 버튼 기능
     document.getElementById('logoutButton').addEventListener('click', function () {
-      localStorage.removeItem('isLoggedIn'); // 로그인 상태 제거
+      localStorage.removeItem('token'); // 로그인 상태 제거
       window.location.href = 'login.html'; // 로그인 화면으로 이동
     });
 
     // 로그인 상태 확인
-    if (!localStorage.getItem('isLoggedIn')) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       alert('로그인이 필요합니다.');
       window.location.href = 'login.html';
+    } else {
+      // 로그인 성공 시 예약 페이지를 로드합니다.
+      loadClassrooms();
+    }
+
+    async function loadClassrooms() {
+      const response = await fetch('/api/classrooms', {
+        headers: { 'Authorization': `Bearer ${token}` }, // Authorization 헤더에 token 추가
+      });
+
+      if (response.ok) {
+        const classrooms = await response.json();
+        const container = document.getElementById('rooms');
+        classrooms.forEach(room => {
+          const btn = document.createElement('button');
+          btn.textContent = room.location;
+          btn.addEventListener('click', () => loadAvailableTimes(room.classroom_id));
+          container.appendChild(btn);
+        });
+      } else {
+        alert('강의실 정보를 불러오는 데 실패했습니다.');
+      }
+    }
+
+    async function loadAvailableTimes(classroomId) {
+      const response = await fetch(`/api/reservations/available/${classroomId}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const availableTimes = await response.json();
+        const container = document.getElementById('availableTimes');
+        container.innerHTML = '';
+        availableTimes.forEach(time => {
+          const btn = document.createElement('button');
+          btn.textContent = time;
+          btn.addEventListener('click', () => reserveTime(classroomId, time));
+          container.appendChild(btn);
+        });
+      } else {
+        alert('예약 가능한 시간을 불러오는 데 실패했습니다.');
+      }
+    }
+
+    async function reserveTime(classroomId, time) {
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ classroom_id: classroomId, reservation_time: time, duration: 60 })
+      });
+
+      if (response.ok) {
+        alert('예약이 성공적으로 완료되었습니다.');
+      } else {
+        alert('예약에 실패했습니다.');
+      }
     }
   </script>
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
