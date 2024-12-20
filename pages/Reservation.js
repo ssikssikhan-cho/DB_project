@@ -16,11 +16,19 @@ const Reservation = () => {
   }, []);
 
   const handleRoomClick = async (roomId) => {
-    const response = await axios.get(`/api/reservations/${roomId}`);
+    const response = await axios.get(`/api/reservations/available/${roomId}`);
     const reserved = response.data;
     setReservedTimes(prevState => ({ ...prevState, [roomId]: reserved }));
+  
+    // 예약 불가능 시간에 대한 스타일 적용
+    reserved.forEach(time => {
+      const button = document.querySelector(`button[data-time="${time}"]`);
+      if (button) {
+        button.disabled = true;
+        button.style.textDecoration = 'line-through';
+      }
+    });
   };
-
   const handleTimeClick = (time) => {
     setSelectedTime(prevSelected => [...prevSelected, time]);
   };
@@ -50,7 +58,7 @@ const Reservation = () => {
         ))}
       </div>
       <div>
-        <h3>예�� 시간</h3>
+        <h3>예약가능 시간</h3>
         {['17:00', '18:00', '19:00', '20:00', '21:00'].map((time) => (
           <button
             key={time}
